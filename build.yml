@@ -1,0 +1,35 @@
+name: Build Windows Installer
+
+# Se déclenche soit manuellement (bouton "Run workflow" sur GitHub),
+# soit automatiquement à chaque push sur la branche main qui touche
+# bootstrap.py.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'bootstrap.py'
+
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest
+    steps:
+      - name: Récupérer le code du repo
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer PyInstaller
+        run: pip install pyinstaller
+
+      - name: Générer le .exe
+        run: python -m PyInstaller --onefile --name installer_windows bootstrap.py
+
+      - name: Publier le .exe comme artefact téléchargeable
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer_windows
+          path: dist/installer_windows.exe
